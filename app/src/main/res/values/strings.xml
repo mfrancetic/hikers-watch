@@ -6,4 +6,6 @@
     <string name="latitude">Latitude:</string>
     <string name="altitude">Altitude:</string>
     <string name="address">Address:</string>
+    <string name="location_access_granted">Location access granted</string>
+    <string name="location_access_denied">Location access denied</string>
 </resources>
