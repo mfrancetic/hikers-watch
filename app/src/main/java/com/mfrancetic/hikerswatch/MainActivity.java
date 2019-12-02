@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             areLocationDetailsAvailable = savedInstanceState.getBoolean(areLocationDetailsAvailableKey);
+        } else {
+            areLocationDetailsAvailable = true;
         }
         if (areLocationDetailsAvailable) {
             showLocationDetails();
