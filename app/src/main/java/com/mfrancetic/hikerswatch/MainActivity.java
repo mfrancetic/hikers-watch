@@ -11,25 +11,55 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
+import org.w3c.dom.Text;
+
+import java.math.RoundingMode;
 import java.security.Permission;
 import java.security.Permissions;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
     private Context context;
 
     private ImageView mainBackgroundImageView;
+
+    private TextView latitudeTextView;
+
+    private TextView longitudeTextView;
+
+    private TextView accuracyTextView;
+
+    private TextView altitudeTextView;
+
+    private TextView addressTextView;
+
+    double latitude;
+
+    double longitude;
+
+    double accuracy;
+
+    double altitude;
+
+    String address;
 
     private LocationManager locationManager;
 
@@ -45,11 +75,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mainBackgroundImageView = findViewById(R.id.main_background_image_view);
+        latitudeTextView = findViewById(R.id.latitude_text_view);
+        longitudeTextView = findViewById(R.id.longitude_text_view);
+        accuracyTextView = findViewById(R.id.accuracy_text_view);
+        altitudeTextView = findViewById(R.id.altitude_text_view);
+        addressTextView = findViewById(R.id.address_text_view);
+
         context = mainBackgroundImageView.getContext();
 
         setupLocationManagerAndListener();
         checkLocationPermission();
-
 
         Glide.with(context).load(R.drawable.forest).centerCrop().into(mainBackgroundImageView);
     }
@@ -74,7 +109,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateLocationDetails(Location lastKnownLocation) {
-
+        latitudeTextView.append(" " + parseDouble(lastKnownLocation.getLatitude()));
+        longitudeTextView.append(" " + parseDouble(lastKnownLocation.getLongitude()));
+        accuracyTextView.append(" " + parseDouble(lastKnownLocation.getAccuracy()));
+        altitudeTextView.append(" " + parseDouble(lastKnownLocation.getAltitude()));
+        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+        try {
+            List<Address> addressList = geocoder.getFromLocation(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), 1);
+            if (addressList != null && addressList.size() > 0) {
+                String address = addressList.get(0).getAddressLine(0);
+                String[] splitAddress = address.split(",");
+                addressTextView.append("\n" + splitAddress[0] + "\n" + splitAddress[1] );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            addressTextView.setVisibility(View.GONE);
+        }
     }
 
     private void setupLocationManagerAndListener() {
@@ -117,5 +167,11 @@ public class MainActivity extends AppCompatActivity {
             }
             Toast.makeText(this, toastText, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String parseDouble(double doubleValue) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        decimalFormat.setRoundingMode(RoundingMode.UP);
+        return decimalFormat.format(doubleValue);
     }
 }
