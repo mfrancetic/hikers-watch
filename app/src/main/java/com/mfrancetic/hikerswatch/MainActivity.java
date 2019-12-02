@@ -2,22 +2,17 @@ package com.mfrancetic.hikerswatch;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.BitmapDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.Image;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,11 +21,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
-import org.w3c.dom.Text;
-
 import java.math.RoundingMode;
-import java.security.Permission;
-import java.security.Permissions;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
@@ -96,20 +87,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkLocationPermission() {
-        if (Build.VERSION.SDK_INT < 23) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minLocationUpdateTime, 0, locationListener);
-            }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, locationRequestCode);
         } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, locationRequestCode);
-            } else {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minLocationUpdateTime, 0, locationListener);
-                Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                if (lastKnownLocation != null) {
-                    updateLocationDetails(lastKnownLocation);
-                }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minLocationUpdateTime, 0, locationListener);
+            Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (lastKnownLocation != null) {
+                updateLocationDetails(lastKnownLocation);
             }
         }
     }
@@ -126,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             if (addressList != null && addressList.size() > 0) {
                 String address = addressList.get(0).getAddressLine(0);
                 String[] splitAddress = address.split(",");
-                addressTextView.append("\n" + splitAddress[0] + "\n" + splitAddress[1] );
+                addressTextView.append("\n" + splitAddress[0] + "\n" + splitAddress[1]);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -162,19 +146,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        String toastText = "";
         if (requestCode == locationRequestCode) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    toastText = getString(R.string.location_access_granted);
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minLocationUpdateTime, 0, locationListener);
-                    showLocationDetails();
-                }
-            } else {
-                toastText = getString(R.string.location_access_denied);
-                setEmptyView();
+                startListeningToLocationUpdates();
             }
-            Toast.makeText(this, toastText, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -192,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         addressTextView.setText(getString(R.string.address));
     }
 
-    private void setEmptyView () {
+    private void setEmptyView() {
         areLocationDetailsAvailable = false;
         emptyTextView.setVisibility(View.VISIBLE);
         latitudeTextView.setVisibility(View.GONE);
@@ -216,5 +191,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putBoolean(areLocationDetailsAvailableKey, areLocationDetailsAvailable);
         super.onSaveInstanceState(outState);
+    }
+
+    private void startListeningToLocationUpdates() {
+        String toastText;
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            toastText = getString(R.string.location_access_granted);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minLocationUpdateTime, 0, locationListener);
+            showLocationDetails();
+        } else {
+            toastText = getString(R.string.location_access_denied);
+            setEmptyView();
+        }
+        Toast.makeText(this, toastText, Toast.LENGTH_SHORT).show();
     }
 }
