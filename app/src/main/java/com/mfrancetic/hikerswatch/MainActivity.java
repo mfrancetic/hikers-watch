@@ -51,23 +51,13 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView addressTextView;
 
-    double latitude;
-
-    double longitude;
-
-    double accuracy;
-
-    double altitude;
-
-    String address;
-
     private LocationManager locationManager;
 
     private LocationListener locationListener;
 
     private int locationRequestCode = 1;
 
-    private int minLocationUpdateTime = 2000;
+    private int minLocationUpdateTime = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateLocationDetails(Location lastKnownLocation) {
+        clearLocationDetails();
         latitudeTextView.append(" " + parseDouble(lastKnownLocation.getLatitude()));
         longitudeTextView.append(" " + parseDouble(lastKnownLocation.getLongitude()));
         accuracyTextView.append(" " + parseDouble(lastKnownLocation.getAccuracy()));
@@ -173,5 +164,13 @@ public class MainActivity extends AppCompatActivity {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         decimalFormat.setRoundingMode(RoundingMode.UP);
         return decimalFormat.format(doubleValue);
+    }
+
+    private void clearLocationDetails() {
+        latitudeTextView.setText(getString(R.string.latitude));
+        longitudeTextView.setText(getString(R.string.longitude));
+        accuracyTextView.setText(getString(R.string.accuracy));
+        altitudeTextView.setText(getString(R.string.altitude));
+        addressTextView.setText(getString(R.string.address));
     }
 }
