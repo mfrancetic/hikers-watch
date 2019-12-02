@@ -51,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView addressTextView;
 
+    private TextView emptyTextView;
+
     private LocationManager locationManager;
 
     private LocationListener locationListener;
@@ -58,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
     private int locationRequestCode = 1;
 
     private int minLocationUpdateTime = 5000;
+
+    private boolean areLocationDetailsAvailable;
+
+    private static final String areLocationDetailsAvailableKey = "areLocationDetailsAvailable";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +76,18 @@ public class MainActivity extends AppCompatActivity {
         accuracyTextView = findViewById(R.id.accuracy_text_view);
         altitudeTextView = findViewById(R.id.altitude_text_view);
         addressTextView = findViewById(R.id.address_text_view);
+        emptyTextView = findViewById(R.id.empty_text_view);
 
         context = mainBackgroundImageView.getContext();
+
+        if (savedInstanceState != null) {
+            areLocationDetailsAvailable = savedInstanceState.getBoolean(areLocationDetailsAvailableKey);
+        }
+        if (areLocationDetailsAvailable) {
+            showLocationDetails();
+        } else {
+            setEmptyView();
+        }
 
         setupLocationManagerAndListener();
         checkLocationPermission();
@@ -152,9 +168,11 @@ public class MainActivity extends AppCompatActivity {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     toastText = getString(R.string.location_access_granted);
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minLocationUpdateTime, 0, locationListener);
+                    showLocationDetails();
                 }
             } else {
                 toastText = getString(R.string.location_access_denied);
+                setEmptyView();
             }
             Toast.makeText(this, toastText, Toast.LENGTH_SHORT).show();
         }
@@ -172,5 +190,31 @@ public class MainActivity extends AppCompatActivity {
         accuracyTextView.setText(getString(R.string.accuracy));
         altitudeTextView.setText(getString(R.string.altitude));
         addressTextView.setText(getString(R.string.address));
+    }
+
+    private void setEmptyView () {
+        areLocationDetailsAvailable = false;
+        emptyTextView.setVisibility(View.VISIBLE);
+        latitudeTextView.setVisibility(View.GONE);
+        longitudeTextView.setVisibility(View.GONE);
+        accuracyTextView.setVisibility(View.GONE);
+        altitudeTextView.setVisibility(View.GONE);
+        addressTextView.setVisibility(View.GONE);
+    }
+
+    private void showLocationDetails() {
+        areLocationDetailsAvailable = true;
+        emptyTextView.setVisibility(View.GONE);
+        latitudeTextView.setVisibility(View.VISIBLE);
+        longitudeTextView.setVisibility(View.VISIBLE);
+        accuracyTextView.setVisibility(View.VISIBLE);
+        altitudeTextView.setVisibility(View.VISIBLE);
+        addressTextView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putBoolean(areLocationDetailsAvailableKey, areLocationDetailsAvailable);
+        super.onSaveInstanceState(outState);
     }
 }

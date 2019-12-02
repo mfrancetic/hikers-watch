@@ -8,4 +8,5 @@
     <string name="address">Address:</string>
     <string name="location_access_granted">Location access granted</string>
     <string name="location_access_denied">Location access denied</string>
+    <string name="no_location_details">No location details available</string>
 </resources>
